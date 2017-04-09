@@ -12,13 +12,17 @@ pkg_check_modules(OpenNI2 REQUIRED libopenni2)
 
 # Find Nite2
 message(STATUS "NITE2_INCLUDE: " $ENV{NITE2_INCLUDE})
-message(STATUS "NITE2_REDIST64: " $ENV{NITE2_REDIST64})
+message(STATUS "NITE2_REDIST64: " $ENV{NITE2_REDIST})
+
+set(NITE2_INCLUDE /vol/robocup//nightly//share//NiTE-2.0.0/Include)
+set(NITE2_REDIST /vol/robocup//nightly//share//NiTE-2.0.0/Redist)
+
 find_path(Nite2_INCLUDEDIR
 	  NAMES NiTE.h
-	  HINTS $ENV{NITE2_INCLUDE})
+	  HINTS ${NITE2_INCLUDE})
 find_library(Nite2_LIBRARY
 	     NAMES NiTE2
-	     HINTS $ENV{NITE2_REDIST64}
+	     HINTS ${NITE2_REDIST}
 	     PATH_SUFFIXES lib) 
 
 catkin_package(
@@ -28,7 +32,7 @@ catkin_package(
 )
 
 include_directories(include
-  ${catkin_INCLUDEDIR}
+  ${catkin_INCLUDE_DIRS}
   ${OpenNI2_INCLUDE_DIRS}
   ${Nite2_INCLUDEDIR})
 link_directories(${OpenNI2_LIBRARY_DIRS})
