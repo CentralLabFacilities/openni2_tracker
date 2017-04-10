@@ -5,10 +5,22 @@ find_package(catkin REQUIRED COMPONENTS geometry_msgs
 					roslib
 					nodelet
 					image_transport
-					tf)
+					tf
+                                        message_generation
+                                        actionlib)
 # Find OpenNI2
 find_package(PkgConfig)
 pkg_check_modules(OpenNI2 REQUIRED libopenni2)
+
+add_action_files(
+	DIRECTORY action 
+	FILES NiteTracker.action
+)
+
+generate_messages(
+   DEPENDENCIES
+   actionlib_msgs
+)
 
 # Find Nite2
 message(STATUS "NITE2_INCLUDE: " $ENV{NITE2_INCLUDE})
