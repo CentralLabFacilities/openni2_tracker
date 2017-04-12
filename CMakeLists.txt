@@ -6,8 +6,10 @@ find_package(catkin REQUIRED COMPONENTS geometry_msgs
 					nodelet
 					image_transport
 					tf
-                                        message_generation
-                                        actionlib)
+                    message_generation
+                    actionlib
+		     		std_msgs
+		            geometry_msgs)
 # Find OpenNI2
 find_package(PkgConfig)
 pkg_check_modules(OpenNI2 REQUIRED libopenni2)
@@ -17,9 +19,16 @@ add_action_files(
 	FILES NiteTracker.action
 )
 
+add_message_files(
+		DIRECTORY msg
+		FILES Joint.msg Skeleton.msg
+)
+
 generate_messages(
    DEPENDENCIES
    actionlib_msgs
+   std_msgs
+   geometry_msgs
 )
 
 # Find Nite2
@@ -50,6 +59,7 @@ include_directories(include
 link_directories(${OpenNI2_LIBRARY_DIRS})
 add_library(openni2_tracker src/openni2_tracker_nodelet.cpp)
 target_link_libraries(openni2_tracker ${catkin_LIBRARIES} ${OpenNI2_LIBRARIES} ${Nite2_LIBRARY})
+add_dependencies(openni2_tracker ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 install(TARGETS ${PROJECT_NAME}
         DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
