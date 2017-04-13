@@ -16,13 +16,15 @@ namespace openni2_tracker {
 
     class OpenNI2TrackerNodelet : public nodelet::Nodelet {
     public:
-        OpenNI2TrackerNodelet(std::string name);
+        //OpenNI2TrackerNodelet(std::string name);
+        
+        OpenNI2TrackerNodelet();
 
         ~OpenNI2TrackerNodelet();
 
         void onInit();
 
-        void start(const openni2_tracker::NiteTrackerActionGoalConstPtr &goal);
+        void start(const openni2_tracker::NiteTrackerGoalConstPtr &goal);
 
         openni2_tracker::NiteTrackerResult createResult(const nite::Array<nite::UserData> &users);
         

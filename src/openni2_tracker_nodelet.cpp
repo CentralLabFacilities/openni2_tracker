@@ -43,9 +43,13 @@ PLUGINLIB_EXPORT_CLASS(openni2_tracker::OpenNI2TrackerNodelet, nodelet::Nodelet)
 
 namespace openni2_tracker {
 
-    OpenNI2TrackerNodelet::OpenNI2TrackerNodelet(std::string name) : as_(nh_, name, boost::bind(&OpenNI2TrackerNodelet::start, this, _1), false) {
+    //OpenNI2TrackerNodelet::OpenNI2TrackerNodelet() {}
+    
+    OpenNI2TrackerNodelet::OpenNI2TrackerNodelet() : as_(nh_, "TrackerActionServer", boost::bind(&OpenNI2TrackerNodelet::start, this, _1), false) {
         as_.start();
     }
+    
+   
 
     OpenNI2TrackerNodelet::~OpenNI2TrackerNodelet() {
         nite::NiTE::shutdown();
@@ -92,7 +96,7 @@ namespace openni2_tracker {
         }
     }
 
-    void OpenNI2TrackerNodelet::start(const openni2_tracker::NiteTrackerActionGoalConstPtr &goal) {
+    void OpenNI2TrackerNodelet::start(const openni2_tracker::NiteTrackerGoalConstPtr &goal) {
         userTrackerFrame_.reset(new nite::UserTrackerFrameRef);
         userTracker_.reset(new nite::UserTracker);
         nite::NiTE::initialize();
