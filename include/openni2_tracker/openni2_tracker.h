@@ -16,23 +16,19 @@ namespace openni2_tracker {
 
     class OpenNI2TrackerNodelet : public nodelet::Nodelet {
     public:
-        OpenNI2TrackerNodelet();
+        OpenNI2TrackerNodelet(std::string name);
 
         ~OpenNI2TrackerNodelet();
 
         void onInit();
 
-        void publishTransform(nite::UserData const &user,
-                              nite::JointType const &joint,
-                              std::string const &frame_id,
-                              std::string const &child_frame_id);
+        void start(const openni2_tracker::NiteTrackerActionGoalConstPtr &goal);
 
-        void start(const ros::TimerEvent);
-
-        void createResult(openni2_tracker::NiteTrackerResult result);
-
-        void publishTransforms(const std::string &frame_id,
-                               const nite::Array<nite::UserData> &users);
+        openni2_tracker::NiteTrackerResult createResult(const nite::Array<nite::UserData> &users);
+        
+        openni2_tracker::Skeleton createSkeleton(nite::UserData const &user);
+        
+        openni2_tracker::Joint createJoint(nite::UserData const &user, std::string jointname, nite::JointType const &jointtype);
 
         void updateUserState(const nite::UserData &user,
                              unsigned long long ts);
@@ -40,7 +36,7 @@ namespace openni2_tracker {
         void device_initialization();
 
     private:
-        boost::shared_ptr<ros::NodeHandle> nh_;
+        ros::NodeHandle nh_;
         boost::shared_ptr<ros::NodeHandle> pnh_;
         boost::shared_ptr<image_transport::ImageTransport> it_;
         image_transport::Subscriber depth_img_sub_;
@@ -48,7 +44,7 @@ namespace openni2_tracker {
         tf::TransformBroadcaster broadcaster_;
 
         //actionlib
-        actionlib::SimpleActionServer<openni2_tracker::NiteTrackerAction> *as_;
+        actionlib::SimpleActionServer<openni2_tracker::NiteTrackerAction> as_;
         bool running_ = false;
 
         boost::mutex mutex_;

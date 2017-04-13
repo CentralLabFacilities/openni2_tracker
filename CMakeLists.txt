@@ -1,15 +1,17 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(openni2_tracker)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 find_package(catkin REQUIRED COMPONENTS geometry_msgs
 					roscpp
 					roslib
 					nodelet
+                                        pluginlib
 					image_transport
 					tf
-                    message_generation
-                    actionlib
-		     		std_msgs
-		            geometry_msgs)
+                                        message_generation
+                                        actionlib
+                                        std_msgs
+                                        geometry_msgs)
 # Find OpenNI2
 find_package(PkgConfig)
 pkg_check_modules(OpenNI2 REQUIRED libopenni2)
@@ -21,7 +23,7 @@ add_action_files(
 
 add_message_files(
 		DIRECTORY msg
-		FILES Joint.msg Skeleton.msg
+		FILES Joint.msg Skeleton.msg State.msg
 )
 
 generate_messages(

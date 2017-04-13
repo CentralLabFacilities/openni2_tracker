@@ -1,52 +1,55 @@
 /*
-* Copyright (c) 2013, Marcus Liebhardt, Yujin Robot.
-* All rights reserved.
-*
-* Redistribution and use in source and binary forms, with or without
-* modification, are permitted provided that the following conditions are met:
-*
-* * Redistributions of source code must retain the above copyright
-* notice, this list of conditions and the following disclaimer.
-* * Redistributions in binary form must reproduce the above copyright
-* notice, this list of conditions and the following disclaimer in the
-* documentation and/or other materials provided with the distribution.
-* * Neither the name of Yujin Robot nor the names of its
-* contributors may be used to endorse or promote products derived from
-* this software without specific prior written permission.
-*
-* THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-* AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-* ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-* LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-* CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-* SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-* INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-* CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-* ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-* POSSIBILITY OF SUCH DAMAGE.
-*/
+ * Copyright (c) 2013, Marcus Liebhardt, Yujin Robot.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+ *
+ * * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ * * Redistributions in binary form must reproduce the above copyright
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
+ * * Neither the name of Yujin Robot nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
+ */
 
 /*
  * Inspired by the openni_tracker by Tim Field and PrimeSense's NiTE 2.0 - Simple Skeleton Sample
  */
+
+#include "openni2_tracker/openni2_tracker.h"
 #include <pluginlib/class_list_macros.h>
 #include <ros/ros.h>
 #include <ros/package.h>
 #include <tf/transform_broadcaster.h>
 #include <kdl/frames.hpp>
-
 #include <NiTE.h>
-#include <openni2_tracker/openni2_tracker.h>
 
 PLUGINLIB_EXPORT_CLASS(openni2_tracker::OpenNI2TrackerNodelet, nodelet::Nodelet)
 
 namespace openni2_tracker {
 
-    OpenNI2TrackerNodelet::OpenNI2TrackerNodelet(std::string name) : max_users_(10), as_(nh_, name, boost::bind(
-            &OpenNI2TrackerNodelet::start, this, _1), false) {}
+    OpenNI2TrackerNodelet::OpenNI2TrackerNodelet(std::string name) : as_(nh_, name, boost::bind(&OpenNI2TrackerNodelet::start, this, _1), false) {
+        as_.start();
+    }
 
-    OpenNI2TrackerNodelet::~OpenNI2TrackerNodelet() { nite::NiTE::shutdown(); }
+    OpenNI2TrackerNodelet::~OpenNI2TrackerNodelet() {
+        nite::NiTE::shutdown();
+    }
 
     using std::string;
 
@@ -60,17 +63,12 @@ namespace openni2_tracker {
             g_skeletonStates.push_back(nite::SKELETON_NONE);
         }
 
-        nh_.reset(new ros::NodeHandle(getMTNodeHandle()));
-        pnh_.reset(new ros::NodeHandle(getMTPrivateNodeHandle()));
-        it_ = boost::shared_ptr<image_transport::ImageTransport>(new image_transport::ImageTransport(*nh_));
-
         frame_id_ = "openni_depth_frame";
         pnh_->getParam("camera_frame_id", frame_id_);
         if (!pnh_->getParam("device_id", device_id_)) {
             device_id_ = "#1";
         }
         NODELET_INFO("device_id: %s", device_id_.c_str());
-        as_->start();
         device_initialization();
     }
 
@@ -83,7 +81,7 @@ namespace openni2_tracker {
 
         openni::Array<openni::DeviceInfo> deviceInfoList;
         openni::OpenNI::enumerateDevices(&deviceInfoList);
-
+        
         if (device_id_.size() == 0 || device_id_ == "#1") {
             device_id_ = deviceInfoList[0].getUri();
         }
@@ -94,7 +92,7 @@ namespace openni2_tracker {
         }
     }
 
-    void OpenNI2TrackerNodelet::start(const ros::TimerEvent) {
+    void OpenNI2TrackerNodelet::start(const openni2_tracker::NiteTrackerActionGoalConstPtr &goal) {
         userTrackerFrame_.reset(new nite::UserTrackerFrameRef);
         userTracker_.reset(new nite::UserTracker);
         nite::NiTE::initialize();
@@ -125,22 +123,57 @@ namespace openni2_tracker {
                 NODELET_INFO("Now tracking user %d", user.getId());
             }
         }
-        openni2_tracker::NiteTrackerResult &result;
-        OpenNI2TrackerNodelet::createResult(result);
-
-        publishTransforms(frame_id_, users);
+        openni2_tracker::NiteTrackerResult result = OpenNI2TrackerNodelet::createResult(users);
+        as_.setSucceeded(result);
     }
 
-    void OpenNI2TrackerNodelet::createResult(openni2_tracker::NiteTrackerResult &result) {
-        
+    openni2_tracker::NiteTrackerResult OpenNI2TrackerNodelet::createResult(const nite::Array<nite::UserData> &users) {
+
+        openni2_tracker::NiteTrackerResult result = openni2_tracker::NiteTrackerResult();
+
+        for (int i = 0; i < users.getSize(); ++i) {
+            const nite::UserData &user = users[i];
+
+            if (user.getSkeleton().getState() != nite::SKELETON_TRACKED) {
+                continue;
+            }
+            result.skeletons.push_back(createSkeleton(user));
+        }
     }
 
+    openni2_tracker::Skeleton OpenNI2TrackerNodelet::createSkeleton(nite::UserData const &user) {
+        openni2_tracker::Skeleton skel = openni2_tracker::Skeleton();
+        skel.id = user.getId();
 
-    void OpenNI2TrackerNodelet::publishTransform(nite::UserData const &user, nite::JointType const &joint,
-                                                 string const &frame_id, string const &child_frame_id) {
-        static tf::TransformBroadcaster br;
+        skel.joints.push_back(createJoint(user, "head", nite::JOINT_HEAD));
+        skel.joints.push_back(createJoint(user, "neck", nite::JOINT_NECK));
+        skel.joints.push_back(createJoint(user, "torso", nite::JOINT_TORSO));
 
-        nite::SkeletonJoint joint_position = user.getSkeleton().getJoint(joint);
+        skel.joints.push_back(createJoint(user, "left_shoulder", nite::JOINT_LEFT_SHOULDER));
+        skel.joints.push_back(createJoint(user, "left_elbow", nite::JOINT_LEFT_ELBOW));
+        skel.joints.push_back(createJoint(user, "left_hand", nite::JOINT_LEFT_HAND));
+
+        skel.joints.push_back(createJoint(user, "right_shoulder", nite::JOINT_RIGHT_SHOULDER));
+        skel.joints.push_back(createJoint(user, "right_elbow", nite::JOINT_RIGHT_ELBOW));
+        skel.joints.push_back(createJoint(user, "right_hand", nite::JOINT_RIGHT_HAND));
+
+        skel.joints.push_back(createJoint(user, "left_hip", nite::JOINT_LEFT_HIP));
+        skel.joints.push_back(createJoint(user, "left_knee", nite::JOINT_LEFT_KNEE));
+        skel.joints.push_back(createJoint(user, "left_foot", nite::JOINT_LEFT_FOOT));
+
+        skel.joints.push_back(createJoint(user, "right_hip", nite::JOINT_RIGHT_HIP));
+        skel.joints.push_back(createJoint(user, "right_knee", nite::JOINT_RIGHT_KNEE));
+        skel.joints.push_back(createJoint(user, "right_foot", nite::JOINT_RIGHT_FOOT));
+
+
+        skel.header.frame_id = frame_id_;
+        skel.header.stamp = ros::Time::now();
+
+        return skel;
+    }
+
+    openni2_tracker::Joint OpenNI2TrackerNodelet::createJoint(nite::UserData const &user, std::string jointname, nite::JointType const &jointtype) {
+        nite::SkeletonJoint joint_position = user.getSkeleton().getJoint(jointtype);
         double x = joint_position.getPosition().x / 1000.0;
         double y = joint_position.getPosition().z / 1000.0;
         double z = joint_position.getPosition().y / 1000.0;
@@ -150,58 +183,25 @@ namespace openni2_tracker {
         double qz = -joint_position.getOrientation().y;
         double qw = joint_position.getOrientation().w;
 
-        char child_frame_no[128];
-        snprintf(child_frame_no, sizeof(child_frame_no), "%s_%d", child_frame_id.c_str(), user.getId());
+        geometry_msgs::Point point = geometry_msgs::Point();
+        point.x = x;
+        point.x = x;
+        point.y = y;
 
-        if (qx == 0 && qy == 0 && qz == 0) {
-            printf("%s has no Orientation: %f %f %f %f. Using default.\n", child_frame_no, qx, qy, qz, qw);
-            qw = 1.0;
-        }
+        geometry_msgs::Quaternion quad = geometry_msgs::Quaternion();
+        quad.w = qw;
+        quad.x = qx;
+        quad.y = qy;
+        quad.z = qz;
 
-        tf::Transform transform;
-        transform.setOrigin(tf::Vector3(x, y, z));
-        transform.setRotation(tf::Quaternion(qx, -qy, -qz, qw));
+        geometry_msgs::Pose pose = geometry_msgs::Pose();
+        pose.orientation = quad;
+        pose.position = point;
 
-        tf::Transform change_frame;
-        change_frame.setOrigin(tf::Vector3(0, 0, 0));
-        tf::Quaternion frame_rotation;
-        frame_rotation.setEulerZYX(1.5708, 3.1416, 3.1416);
-        change_frame.setRotation(frame_rotation);
-
-        transform = change_frame * transform;
-
-        br.sendTransform(tf::StampedTransform(transform, ros::Time::now(), frame_id, child_frame_no));
-    }
-
-
-    void
-    OpenNI2TrackerNodelet::publishTransforms(const std::string &frame_id, const nite::Array<nite::UserData> &users) {
-        for (int i = 0; i < users.getSize(); ++i) {
-            const nite::UserData &user = users[i];
-
-            if (user.getSkeleton().getState() != nite::SKELETON_TRACKED)
-                continue;
-
-            publishTransform(user, nite::JOINT_HEAD, frame_id, "head");
-            publishTransform(user, nite::JOINT_NECK, frame_id, "neck");
-            publishTransform(user, nite::JOINT_TORSO, frame_id, "torso");
-
-            publishTransform(user, nite::JOINT_LEFT_SHOULDER, frame_id, "left_shoulder");
-            publishTransform(user, nite::JOINT_LEFT_ELBOW, frame_id, "left_elbow");
-            publishTransform(user, nite::JOINT_LEFT_HAND, frame_id, "left_hand");
-
-            publishTransform(user, nite::JOINT_RIGHT_SHOULDER, frame_id, "right_shoulder");
-            publishTransform(user, nite::JOINT_RIGHT_ELBOW, frame_id, "right_elbow");
-            publishTransform(user, nite::JOINT_RIGHT_HAND, frame_id, "right_hand");
-
-            publishTransform(user, nite::JOINT_LEFT_HIP, frame_id, "left_hip");
-            publishTransform(user, nite::JOINT_LEFT_KNEE, frame_id, "left_knee");
-            publishTransform(user, nite::JOINT_LEFT_FOOT, frame_id, "left_foot");
-
-            publishTransform(user, nite::JOINT_RIGHT_HIP, frame_id, "right_hip");
-            publishTransform(user, nite::JOINT_RIGHT_KNEE, frame_id, "right_knee");
-            publishTransform(user, nite::JOINT_RIGHT_FOOT, frame_id, "right_foot");
-        }
+        openni2_tracker::Joint joint = openni2_tracker::Joint();
+        joint.name = jointname;
+        joint.pose = pose;
+        return joint;
     }
 
     void OpenNI2TrackerNodelet::updateUserState(const nite::UserData &user, unsigned long long ts) {
@@ -210,7 +210,7 @@ namespace openni2_tracker {
         else if (!user.isVisible() && g_visibleUsers[user.getId()]) USER_MESSAGE("Out of Scene")
         else if (user.isLost()) USER_MESSAGE("Lost")
 
-        g_visibleUsers[user.getId()] = user.isVisible();
+            g_visibleUsers[user.getId()] = user.isVisible();
 
 
         if (g_skeletonStates[user.getId()] != user.getSkeleton().getState()) {
