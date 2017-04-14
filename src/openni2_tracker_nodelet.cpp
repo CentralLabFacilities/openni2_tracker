@@ -146,7 +146,7 @@ namespace openni2_tracker {
     }
 
     openni2_tracker::Skeleton OpenNI2TrackerNodelet::createSkeleton(nite::UserData const &user) {
-        openni2_tracker::Skeleton skel = openni2_tracker::Skeleton();
+        openni2_tracker_msgs::Skeleton skel = openni2_tracker_msgs::Skeleton();
         skel.id = user.getId();
 
         skel.joints.push_back(createJoint(user, "head", nite::JOINT_HEAD));
@@ -202,7 +202,7 @@ namespace openni2_tracker {
         pose.orientation = quad;
         pose.position = point;
 
-        openni2_tracker::Joint joint = openni2_tracker::Joint();
+        openni2_tracker_msgs::Joint joint = openni2_tracker_msgs::Joint();
         joint.name = jointname;
         joint.pose = pose;
         return joint;

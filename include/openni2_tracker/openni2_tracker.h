@@ -8,7 +8,9 @@
 #include <image_transport/image_transport.h>
 #include <actionlib/server/simple_action_server.h>
 #include <openni2_tracker/NiteTrackerAction.h>
-
+#include <openni2_tracker_msgs/Skeleton.h>
+#include <openni2_tracker_msgs/Joint.h>
+#include <openni2_tracker_msgs/State.h>
 #include <NiTE.h>
 #include <OpenNI.h>
 
@@ -28,9 +30,9 @@ namespace openni2_tracker {
 
         openni2_tracker::NiteTrackerResult createResult(const nite::Array<nite::UserData> &users);
         
-        openni2_tracker::Skeleton createSkeleton(nite::UserData const &user);
+        openni2_tracker_msgs::Skeleton createSkeleton(nite::UserData const &user);
         
-        openni2_tracker::Joint createJoint(nite::UserData const &user, std::string jointname, nite::JointType const &jointtype);
+        openni2_tracker_msgs::Joint createJoint(nite::UserData const &user, std::string jointname, nite::JointType const &jointtype);
 
         void updateUserState(const nite::UserData &user,
                              unsigned long long ts);
