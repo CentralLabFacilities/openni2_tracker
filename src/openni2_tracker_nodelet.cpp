@@ -145,7 +145,7 @@ namespace openni2_tracker {
         }
     }
 
-    openni2_tracker::Skeleton OpenNI2TrackerNodelet::createSkeleton(nite::UserData const &user) {
+    openni2_tracker_msgs::Skeleton OpenNI2TrackerNodelet::createSkeleton(nite::UserData const &user) {
         openni2_tracker_msgs::Skeleton skel = openni2_tracker_msgs::Skeleton();
         skel.id = user.getId();
 
@@ -176,7 +176,7 @@ namespace openni2_tracker {
         return skel;
     }
 
-    openni2_tracker::Joint OpenNI2TrackerNodelet::createJoint(nite::UserData const &user, std::string jointname, nite::JointType const &jointtype) {
+    openni2_tracker_msgs::Joint OpenNI2TrackerNodelet::createJoint(nite::UserData const &user, std::string jointname, nite::JointType const &jointtype) {
         nite::SkeletonJoint joint_position = user.getSkeleton().getJoint(jointtype);
         double x = joint_position.getPosition().x / 1000.0;
         double y = joint_position.getPosition().z / 1000.0;
