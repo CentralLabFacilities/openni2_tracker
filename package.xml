@@ -41,7 +41,6 @@
     <run_depend>message_runtime</run_depend>
 
 
-
     <export>
         <nodelet plugin="${prefix}/openni2_tracker_nodelet.xml" />
     </export>

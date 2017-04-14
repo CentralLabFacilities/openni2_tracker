@@ -1,17 +1,15 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(openni2_tracker)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-find_package(catkin REQUIRED COMPONENTS geometry_msgs
+find_package(catkin REQUIRED COMPONENTS 
 					roscpp
 					roslib
 					nodelet
                                         pluginlib
 					image_transport
 					tf
-                                        message_generation
                                         actionlib
-                                        std_msgs
-                                        geometry_msgs)
+                                        openni2_tracker_msgs)
 # Find OpenNI2
 find_package(PkgConfig)
 pkg_check_modules(OpenNI2 REQUIRED libopenni2)
@@ -21,16 +19,10 @@ add_action_files(
 	FILES NiteTracker.action
 )
 
-add_message_files(
-		DIRECTORY msg
-		FILES Joint.msg Skeleton.msg State.msg
-)
-
 generate_messages(
    DEPENDENCIES
    actionlib_msgs
-   std_msgs
-   geometry_msgs
+   openni2_tracker_msgs
 )
 
 # Find Nite2
