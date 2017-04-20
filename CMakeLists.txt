@@ -29,8 +29,8 @@ generate_messages(
 message(STATUS "NITE2_INCLUDE: " $ENV{NITE2_INCLUDE})
 message(STATUS "NITE2_REDIST64: " $ENV{NITE2_REDIST})
 
-set(NITE2_INCLUDE $ENV{PREFIX}/share//NiTE-2.0.0/Include)
-set(NITE2_REDIST $ENV{PREFIX}/share//NiTE-2.0.0/Redist)
+set(NITE2_INCLUDE ${CMAKE_PREFIX_PATH}/share//NiTE-2.0.0/Include)
+set(NITE2_REDIST ${CMAKE_PREFIX_PATH}/share//NiTE-2.0.0/Redist)
 
 find_path(Nite2_INCLUDEDIR
 	  NAMES NiTE.h
