@@ -28,8 +28,8 @@ generate_messages(
 roslaunch_add_file_check(launch)
 
 
-set(NITE2_INCLUDE ${CMAKE_INSTALL_PREFIX}/share//NiTE-2.0.0/Include)
-set(NITE2_REDIST ${CMAKE_INSTALL_PREFIX}/share//NiTE-2.0.0/Redist)
+set(NITE2_INCLUDE /vol/robocup/nightly/share//NiTE-2.0.0/Include)
+set(NITE2_REDIST /vol/robocup/nightly/share//NiTE-2.0.0/Redist)
 
 # Find Nite2
 message(STATUS "NITE2_INCLUDE: " ${NITE2_INCLUDE})
@@ -44,7 +44,6 @@ find_library(Nite2_LIBRARY
 	     PATH_SUFFIXES lib) 
 
 catkin_package(
-  LIBRARIES ${PROJECT_NAME}
   CATKIN_DEPENDS roscpp
 )
 
@@ -53,19 +52,15 @@ include_directories(include
   ${OpenNI2_INCLUDE_DIRS}
   ${Nite2_INCLUDEDIR})
 
+link_directories(${OpenNI2_LIBRARY_DIRS})
 add_executable(openni2_tracker src/tracking.cpp src/openni2_tracker.cpp)
 
-link_directories(${OpenNI2_LIBRARY_DIRS})
-target_link_libraries(openni2_tracker ${catkin_LIBRARIES} ${OpenNI2_LIBRARIES} ${Nite2_LIBRARY})
 add_dependencies(openni2_tracker ${${PROJECT_NAME}_EXPORTED_TARGETS})
-
+target_link_libraries(openni2_tracker ${catkin_LIBRARIES} ${OpenNI2_LIBRARIES} ${Nite2_LIBRARY})
 
 
 install(TARGETS ${PROJECT_NAME}
-        DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
-
-install(DIRECTORY include/${PROJECT_NAME}/
-        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION})
+        DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 install(DIRECTORY launch DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
