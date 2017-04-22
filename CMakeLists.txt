@@ -44,7 +44,6 @@ find_library(Nite2_LIBRARY
 	     PATH_SUFFIXES lib) 
 
 catkin_package(
-  INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
   CATKIN_DEPENDS roscpp
 )
