@@ -6,7 +6,7 @@
 #include <tf/transform_broadcaster.h>
 #include <image_transport/image_transport.h>
 #include <actionlib/server/simple_action_server.h>
-#include <openni2_tracker/NiteTrackerAction.h>
+#include <openni2_tracker_msgs/NiteTrackerAction.h>
 #include <openni2_tracker_msgs/Skeleton.h>
 #include <openni2_tracker_msgs/Joint.h>
 #include <openni2_tracker_msgs/State.h>
@@ -23,9 +23,9 @@ public:
 
     void init();
 
-    void start(const openni2_tracker::NiteTrackerGoalConstPtr &goal);
+    void start(const openni2_tracker_msgs::NiteTrackerGoalConstPtr &goal);
 
-    openni2_tracker::NiteTrackerResult createResult(const nite::Array<nite::UserData> &users);
+    openni2_tracker_msgs::NiteTrackerResult createResult(const nite::Array<nite::UserData> &users);
 
     openni2_tracker_msgs::Skeleton createSkeleton(nite::UserData const &user);
 
@@ -44,7 +44,7 @@ private:
     tf::TransformBroadcaster broadcaster_;
 
     //actionlib
-    actionlib::SimpleActionServer<openni2_tracker::NiteTrackerAction> as_;
+    actionlib::SimpleActionServer<openni2_tracker_msgs::NiteTrackerAction> as_;
     bool running_ = false;
 
     boost::mutex mutex_;

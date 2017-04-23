@@ -14,17 +14,6 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(PkgConfig)
 pkg_check_modules(OpenNI2 REQUIRED libopenni2)
 
-add_action_files(
-	DIRECTORY action 
-	FILES NiteTracker.action
-)
-
-generate_messages(
-   DEPENDENCIES
-   actionlib_msgs
-   openni2_tracker_msgs
-)
-
 roslaunch_add_file_check(launch)
 
 
@@ -44,7 +33,7 @@ find_library(Nite2_LIBRARY
 	     PATH_SUFFIXES lib) 
 
 catkin_package(
-  CATKIN_DEPENDS roscpp
+  CATKIN_DEPENDS roscpp openni2_tracker_msgs
 )
 
 include_directories(include
@@ -54,15 +43,9 @@ include_directories(include
 
 link_directories(${OpenNI2_LIBRARY_DIRS})
 add_executable(openni2_tracker src/tracking.cpp src/openni2_tracker.cpp)
-
-add_dependencies(openni2_tracker ${${PROJECT_NAME}_EXPORTED_TARGETS})
 target_link_libraries(openni2_tracker ${catkin_LIBRARIES} ${OpenNI2_LIBRARIES} ${Nite2_LIBRARY})
-
 
 install(TARGETS ${PROJECT_NAME}
         DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
 install(DIRECTORY launch DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
-
-install(DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_GLOBAL_MAVEN_DESTINATION}/org/ros/rosjava_messages/ 
-DESTINATION ${CATKIN_GLOBAL_MAVEN_DESTINATION}/org/ros/rosjava_messages)

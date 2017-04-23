@@ -85,7 +85,7 @@ void OpenNI2Tracker::device_initialization() {
     }
 }
 
-void OpenNI2Tracker::start(const openni2_tracker::NiteTrackerGoalConstPtr &goal) {
+void OpenNI2Tracker::start(const openni2_tracker_msgs::NiteTrackerGoalConstPtr &goal) {
     if (!as_.isActive() || as_.isPreemptRequested()) {
         ROS_INFO("Preempted");
         as_.setPreempted();
@@ -116,13 +116,13 @@ void OpenNI2Tracker::start(const openni2_tracker::NiteTrackerGoalConstPtr &goal)
         } else if (user.getSkeleton().getState() == nite::SKELETON_TRACKED) {
         }
     }
-    openni2_tracker::NiteTrackerResult result = OpenNI2Tracker::createResult(users);
+    openni2_tracker_msgs::NiteTrackerResult result = OpenNI2Tracker::createResult(users);
     as_.setSucceeded(result);
 }
 
-openni2_tracker::NiteTrackerResult OpenNI2Tracker::createResult(const nite::Array<nite::UserData> &users) {
+openni2_tracker_msgs::NiteTrackerResult OpenNI2Tracker::createResult(const nite::Array<nite::UserData> &users) {
 
-    openni2_tracker::NiteTrackerResult result = openni2_tracker::NiteTrackerResult();
+    openni2_tracker_msgs::NiteTrackerResult result = openni2_tracker::NiteTrackerResult();
 
     for (int i = 0; i < users.getSize(); ++i) {
         const nite::UserData &user = users[i];
