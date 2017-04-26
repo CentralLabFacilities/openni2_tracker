@@ -16,9 +16,8 @@ pkg_check_modules(OpenNI2 REQUIRED libopenni2)
 
 roslaunch_add_file_check(launch)
 
-
-set(NITE2_INCLUDE /vol/robocup/nightly/share//NiTE-2.0.0/Include)
-set(NITE2_REDIST /vol/robocup/nightly/share//NiTE-2.0.0/Redist)
+set(NITE2_INCLUDE $ENV{PREFIX}/share//NiTE-2.0.0/Include)
+set(NITE2_REDIST $ENV{PREFIX}/share//NiTE-2.0.0/Redist)
 
 # Find Nite2
 message(STATUS "NITE2_INCLUDE: " ${NITE2_INCLUDE})
@@ -43,6 +42,7 @@ include_directories(include
 
 link_directories(${OpenNI2_LIBRARY_DIRS})
 add_executable(openni2_tracker src/tracking.cpp src/openni2_tracker.cpp)
+
 target_link_libraries(openni2_tracker ${catkin_LIBRARIES} ${OpenNI2_LIBRARIES} ${Nite2_LIBRARY})
 
 install(TARGETS ${PROJECT_NAME}

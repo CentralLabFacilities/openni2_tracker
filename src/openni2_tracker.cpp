@@ -122,8 +122,7 @@ void OpenNI2Tracker::start(const openni2_tracker_msgs::NiteTrackerGoalConstPtr &
 
 openni2_tracker_msgs::NiteTrackerResult OpenNI2Tracker::createResult(const nite::Array<nite::UserData> &users) {
 
-    openni2_tracker_msgs::NiteTrackerResult result = openni2_tracker::NiteTrackerResult();
-
+    openni2_tracker_msgs::NiteTrackerResult result = openni2_tracker_msgs::NiteTrackerResult();
     for (int i = 0; i < users.getSize(); ++i) {
         const nite::UserData &user = users[i];
 
