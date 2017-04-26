@@ -16,8 +16,8 @@ pkg_check_modules(OpenNI2 REQUIRED libopenni2)
 
 roslaunch_add_file_check(launch)
 
-set(NITE2_INCLUDE $ENV{PREFIX}/share//NiTE-2.0.0/Include)
-set(NITE2_REDIST $ENV{PREFIX}/share//NiTE-2.0.0/Redist)
+set(NITE2_INCLUDE ${CMAKE_INSTALL_PREFIX}/share//NiTE-2.0.0/Include)
+set(NITE2_REDIST ${CMAKE_INSTALL_PREFIX}/share//NiTE-2.0.0/Redist)
 
 # Find Nite2
 message(STATUS "NITE2_INCLUDE: " ${NITE2_INCLUDE})
